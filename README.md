@@ -27,6 +27,7 @@ and not investment advice.
 11. [API reference](#11-api-reference)
 12. [Project structure](#12-project-structure)
 13. [Content integrity rules](#13-content-integrity-rules)
+14a. [Deploying to GitHub Pages](#14a-deploying-the-static-site-to-github-pages)
 14. [Accessibility and performance notes](#14-accessibility-and-performance-notes)
 15. [Known limitations](#15-known-limitations)
 16. [Troubleshooting](#16-troubleshooting)
@@ -498,6 +499,37 @@ Not yet verified (see §6): pixel-level layout at the six target widths, and
 canvas chart rendering. Those require a browser.
 
 ---
+
+## 14a. Deploying the static site to GitHub Pages
+
+A workflow at `.github/workflows/deploy-pages.yml` publishes the SPA as a
+project page at `https://<user>.github.io/learnyx-trading/`.
+
+It handles the three things Pages needs:
+
+1. `BASE_PATH=/learnyx-trading/` so asset URLs and the Router basename are
+   prefixed correctly (`vite.config.ts` `base` + `main.tsx` `BrowserRouter`).
+2. `dist/404.html` as a copy of `index.html`, so deep links survive a hard
+   refresh on a host with no rewrite engine.
+3. `dist/.nojekyll`, so `assets/` is served verbatim.
+
+**One-time manual step (cannot be done by the automation token):**
+
+> Repository → **Settings → Pages → Build and deployment → Source: GitHub Actions**
+
+Then push to `master` (or run the workflow manually). The site appears at
+`https://Nikhilsahu7112.github.io/learnyx-trading/`.
+
+### What Pages does NOT give you
+
+Pages serves static files only — **there is no Worker running**, so `/api/*`
+does not exist there. Every page still works, because the SPA imports content
+from the same modules the API would serve. The only visible difference is the
+live tester on `/api-docs`, which correctly reports a network error and tells
+the reader the API is unavailable on a static host.
+
+For the full product (static site **and** `/api/*`), deploy the Worker per
+§10 — that single deployment serves both.
 
 ## 15. Known limitations
 

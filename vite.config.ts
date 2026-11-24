@@ -3,9 +3,15 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 // Learnyx Trading — Vite configuration.
-// The dev server proxies /api/* to a local Cloudflare Worker (`npx wrangler dev --port 8787`)
-// so the browser only ever talks to same-origin relative URLs.
+//
+// The dev server proxies /api/* to a local Cloudflare Worker
+// (`npx wrangler dev --port 8787`) so the browser only ever talks to
+// same-origin relative URLs.
+//
+// BASE_PATH is only set by the GitHub Pages workflow, where a project site is
+// served from /<repo>/. Everywhere else (Cloudflare, localhost) it stays '/'.
 export default defineConfig({
+  base: process.env.BASE_PATH || '/',
   plugins: [react(), tailwindcss()],
   server: {
     host: '0.0.0.0',

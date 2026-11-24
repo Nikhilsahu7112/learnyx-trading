@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+# Publishes a static build of the SPA. The Cloudflare Worker API is optional —
+# every page renders from the bundled content modules, so the site is fully
+# browsable without it. /api-docs states this explicitly when the API is absent.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build static site for project pages
+        env:
+          # Project pages are served from /<repo>/ — React Router needs this base.
+          BASE_PATH: /learnyx-trading/
+        run: npm run build
+
+      - name: Add SPA fallback routing files
+        run: |
+          # GitHub Pages has no rewrite engine: serve index.html for unknown
+          # paths so client-side routes survive a hard refresh.
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
