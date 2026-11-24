@@ -1,0 +1,12 @@
+node_modules
+dist
+worker/public
+worker/build-manifest.json
+.dev.vars
+.env
+.env.*
+.wrangler
+*.log
+.DS_Store
+.render-tmp
+*.tsbuildinfo

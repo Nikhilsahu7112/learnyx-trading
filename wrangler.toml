@@ -1,0 +1,44 @@
+# Learnyx Trading — Cloudflare Worker configuration
+#
+# Deploy checklist (see README for the full walkthrough):
+#   1. `npm run build`                          — builds the SPA into dist/ and worker/public/
+#   2. `npx wrangler kv namespace create LEARNYX_KV`
+#      → copy the returned id into `id` below (this file must be committed with
+#        the real namespace id; it is an identifier, not a secret)
+#   3. `npx wrangler secret put ADMIN_SECRET`   — enter a long random value at the prompt
+#   4. `npx wrangler deploy`
+#
+# Never put the ADMIN_SECRET value in this file, in .env files, or in git.
+
+name = "learnyx-trading"
+main = "worker/index.ts"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static SPA output. `not_found_handling = "single-page-application"` lets the
+# Worker fall back to index.html for client-side routes while still returning
+# real 404s for missing hashed assets.
+[assets]
+directory = "./worker/public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
+
+[vars]
+ENVIRONMENT = "production"
+BUILD_VERSION = "1.0.0"
+
+# KV namespace for rate-limit counters and admin-managed content overrides.
+# Replace the placeholder with the id printed by
+#   npx wrangler kv namespace create LEARNYX_KV
+[[kv_namespaces]]
+binding = "LEARNYX_KV"
+id = "REPLACE_WITH_LEARNYX_KV_NAMESPACE_ID"
+
+# Local development only. `wrangler dev` reads these; deployed environments use
+# `wrangler secret put` instead and never commit values.
+[dev]
+port = 8787
+local_protocol = "http"
